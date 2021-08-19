@@ -1,56 +1,43 @@
-
-function getUiConfig() {
-  return {
-    'callbacks': {
-      'signInSuccess': function(user, credential, redirectUrl) {
-        handleSignedInUser(user);
-        return false;
-      }
-    },
-    'signInFlow': 'popup',
-    'signInOptions': [
-	
-          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-	{
-        provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-        recaptchaParameters: {
-          type: 'image', 
-          size: 'invisible',
-          badge: 'bottomleft' 
-        },
-	      defaultCountry: 'IN', 
-	      defaultNationalNumber: '1234567890',
-	      loginHint: '+11234567890'
-	}
-        ],
-    'tosUrl': 'https://www.google.com'
-  };
+window.onload=function(){
+     render();
 }
 
-var ui = new firebaseui.auth.AuthUI(firebase.auth());
+function render(){
+     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+     recaptchaVerifier.render();
+}
 
-var handleSignedInUser = function(user) {
-  document.getElementById('user-signed-in').style.display = 'block';
-  document.getElementById('user-signed-out').style.display = 'none';
-  document.getElementById('phone').textContent = user.phoneNumber;
-};
 
-var handleSignedOutUser = function() {
-  document.getElementById('user-signed-in').style.display = 'none';
-  document.getElementById('user-signed-out').style.display = 'block';
-  ui.start('#firebaseui-container', getUiConfig());
-};
+function phoneAuth(){
+     
+     var phone_number = document.getElementById('phone').value;
 
-firebase.auth().onAuthStateChanged(function(user) {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('loaded').style.display = 'block';
-  user ? handleSignedInUser(user) : handleSignedOutUser();
-});
+     firebase.auth().signInWithPhoneNumber(phone_number, window.recaptchaVerifier)
+      .then(function(confirmationResult){
+      // SMS sent. Prompt user to type the code from the message, then sign the
+      // user in with confirmationResult.confirm(code).
+      window.confirmationResult = confirmationResult;
+      coderesult = confirmationResult;
+      console.log(coderesult);
+      alert("message sent");
+      // ...
+    }).catch(function(error){
+      // Error; SMS not sent
+      alert(error.message);
+    });
+}
 
-var initApp = function() {
-  document.getElementById('sign-out').addEventListener('click', function() {
-    firebase.auth().signOut();
-  });
-};
 
-window.addEventListener('load', initApp);
+function verifyNumber(){
+     var code = document.getElementById('verifycode').value;
+
+         coderesult.confirm(code).then(function(result){
+  // User signed in successfully.
+         var user = result.user;
+         console.log(user);
+         alert('Success register');
+  // ...
+         }).catch(function(error){
+          alert(error.message);
+         });
+}
